@@ -53,19 +53,10 @@ public class CustomizedExceptionResponseHandler extends ResponseEntityExceptionH
 
 	}
 
-	@Override
-	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
-			HttpHeaders headers, HttpStatus status, WebRequest request) {
-
-		ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(),
-				ExceptionMessageConstants.VALIDATION_FAILED, ex.getBindingResult().toString());
-
-		return new ResponseEntity<Object>(exceptionResponse, HttpStatus.BAD_REQUEST);
-
-	}
+	
 
 	@ExceptionHandler(TransactionSystemException.class)
-	public ResponseEntity<Object> handle(TransactionSystemException exception) {
+	public ResponseEntity<Object> handleTransactionException(TransactionSystemException exception) {
 
 		Throwable exceptionCause = exception.getMostSpecificCause();
 
@@ -86,6 +77,18 @@ public class CustomizedExceptionResponseHandler extends ResponseEntityExceptionH
 
 		ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(),
 				ExceptionMessageConstants.VALIDATION_FAILED, exception.getMessage());
+
+		return new ResponseEntity<Object>(exceptionResponse, HttpStatus.BAD_REQUEST);
+
+	}
+	
+	
+	@Override
+	protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
+			HttpHeaders headers, HttpStatus status, WebRequest request) {
+
+		ExceptionResponse exceptionResponse = new ExceptionResponse(new Date(),
+				ExceptionMessageConstants.VALIDATION_FAILED, ex.getBindingResult().toString());
 
 		return new ResponseEntity<Object>(exceptionResponse, HttpStatus.BAD_REQUEST);
 

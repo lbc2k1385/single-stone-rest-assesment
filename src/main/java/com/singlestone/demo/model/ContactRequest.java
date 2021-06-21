@@ -4,57 +4,39 @@ import java.io.Serializable;
 import java.util.List;
 
 import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.validation.constraints.Email;
-import javax.validation.constraints.Positive;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+public class ContactRequest implements Serializable {
 
-@Entity
-public class Contact implements Serializable {
-
-	private static final long serialVersionUID = 7161313278341523844L;
-
-	@Positive
-	@Id
-	@GeneratedValue
-	private int id;
+	private static final long serialVersionUID = 2202289758140746827L;
 
 	@OneToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "name_id", referencedColumnName = "id")
 	private Name name;
 
 	@OneToOne(cascade = CascadeType.ALL)
-	private Address address;
+	@JoinColumn(name = "address_id", referencedColumnName = "id")
+	private RequestAddressDTO address;
 
-	@OneToMany(mappedBy = "contact", cascade = CascadeType.ALL)
-	@JsonIgnoreProperties("contact")
-	private List<Phone> phone;
+	@OneToMany(cascade = CascadeType.ALL)
+	private List<PhoneRequestDTO> phone;
 
 	@Email(message = "Email is not valid")
 	private String email;
 
-	public Contact(Name name, Address address, List<Phone> phone, String email) {
+	public ContactRequest() {
+	}
+
+	public ContactRequest(Name name, RequestAddressDTO address, List<PhoneRequestDTO> phone,
+			@Email(message = "Email is not valid") String email) {
 		super();
 		this.name = name;
 		this.address = address;
 		this.phone = phone;
 		this.email = email;
-	}
-
-	public Contact() {
-
-	}
-
-	public int getId() {
-		return id;
-	}
-
-	public void setId(int id) {
-		this.id = id;
 	}
 
 	public Name getName() {
@@ -65,19 +47,19 @@ public class Contact implements Serializable {
 		this.name = name;
 	}
 
-	public Address getAddress() {
+	public RequestAddressDTO getAddress() {
 		return address;
 	}
 
-	public void setAddress(Address address) {
+	public void setAddress(RequestAddressDTO address) {
 		this.address = address;
 	}
 
-	public List<Phone> getPhone() {
+	public List<PhoneRequestDTO> getPhone() {
 		return phone;
 	}
 
-	public void setPhone(List<Phone> phone) {
+	public void setPhone(List<PhoneRequestDTO> phone) {
 		this.phone = phone;
 	}
 
@@ -95,7 +77,6 @@ public class Contact implements Serializable {
 		int result = 1;
 		result = prime * result + ((address == null) ? 0 : address.hashCode());
 		result = prime * result + ((email == null) ? 0 : email.hashCode());
-		result = prime * result + id;
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((phone == null) ? 0 : phone.hashCode());
 		return result;
@@ -109,7 +90,7 @@ public class Contact implements Serializable {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Contact other = (Contact) obj;
+		ContactRequest other = (ContactRequest) obj;
 		if (address == null) {
 			if (other.address != null)
 				return false;
@@ -119,8 +100,6 @@ public class Contact implements Serializable {
 			if (other.email != null)
 				return false;
 		} else if (!email.equals(other.email))
-			return false;
-		if (id != other.id)
 			return false;
 		if (name == null) {
 			if (other.name != null)
@@ -134,4 +113,5 @@ public class Contact implements Serializable {
 			return false;
 		return true;
 	}
+
 }

@@ -1,8 +1,5 @@
 package com.singlestone.demo.resource;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
-
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +8,6 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -27,10 +23,13 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.singlestone.demo.model.CallListContact;
 import com.singlestone.demo.model.Contact;
+import com.singlestone.demo.model.ContactRequest;
 import com.singlestone.demo.model.Name;
 import com.singlestone.demo.model.Phone;
 import com.singlestone.demo.model.PhoneType;
 import com.singlestone.demo.repository.ContactRepository;
+import com.singlestone.demo.repository.util.ContactRequestMapper;
+import com.singlestone.demo.repository.util.ResourceUtil;
 import com.singlestone.demo.resource.exceptions.ContactNotFoundException;
 import com.singlestone.demo.resource.exceptions.ContactNotSavedException;
 
@@ -46,6 +45,12 @@ public class ContactResource {
 
 	@Autowired
 	private ContactRepository contactRepository;
+
+	@Autowired
+	private ResourceUtil resourceUtil;
+	
+	@Autowired
+	private ContactRequestMapper contactRequestMapper;
 
 	@GetMapping
 	@Operation(summary = "Retrieve all contacts.")
@@ -63,7 +68,7 @@ public class ContactResource {
 		if (foundContacts.isEmpty())
 			throw new ContactNotFoundException("No contacts found");
 
-		List<EntityModel<Contact>> entityModels = createHATEOASLinks(foundContacts);
+		List<EntityModel<Contact>> entityModels = resourceUtil.createHATEOASLinks(foundContacts);
 
 		return ResponseEntity.ok(CollectionModel.of(entityModels));
 	}
@@ -84,7 +89,7 @@ public class ContactResource {
 		if (!optionalContact.isPresent())
 			throw new ContactNotFoundException(String.format("Contact not found", id));
 
-		EntityModel<Contact> model = createHATEOASLinks(optionalContact.get());
+		EntityModel<Contact> model = resourceUtil.createHATEOASLinks(optionalContact.get(), null);
 
 		return model;
 	}
@@ -103,20 +108,21 @@ public class ContactResource {
 		List<CallListContact> callListContacts = new ArrayList<>();
 
 		List<Contact> contacts = contactRepository.findAll();
+		
+		if (contacts.isEmpty())
+			throw new ContactNotFoundException("No contacts found");
 
 		for (Contact contact : contacts) {
+
 			Optional<Phone> optPhone = contact.getPhone().stream()
 					.filter(p -> !p.getNumber().equals(PhoneType.home.toString())).findFirst();
 
 			if (optPhone.isPresent()) {
-				CallListContact callListContact = new CallListContact();
-
-				Name name = new Name();
-				name.setFirst(contact.getName().getFirst());
-				name.setMiddle(contact.getName().getMiddle());
-				name.setMiddle(contact.getName().getLast());
-				callListContact.setName(name);
-				callListContact.setPhone(optPhone.get().getNumber());
+				
+				Name name = new Name(contact.getName().getFirst(), contact.getName().getLast(), contact,
+						contact.getName().getMiddle());
+				
+				CallListContact callListContact = new CallListContact(name, optPhone.get().getNumber());
 				callListContacts.add(callListContact);
 			}
 
@@ -133,15 +139,16 @@ public class ContactResource {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = Contact.class)) }),
 			@ApiResponse(responseCode = "500", description = "Could not create contact", content = {
 					@Content(mediaType = "application/json") }) })
-	public ResponseEntity<?> createContact(@RequestBody Contact contact) {
+	public ResponseEntity<?> createContact(@RequestBody ContactRequest contactRequest) {
 
+		Contact contact =  contactRequestMapper.mapToContact(contactRequest);
 		Contact newContact = contactRepository.save(contact);
 
 		if (newContact == null)
 			throw new ContactNotSavedException("Could not create contact");
 
-		URI resourceURI = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(contact.getId())
-				.toUri();
+		URI resourceURI = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
+				.buildAndExpand(newContact.getId()).toUri();
 
 		return ResponseEntity.created(resourceURI).build();
 
@@ -172,7 +179,7 @@ public class ContactResource {
 
 	@PutMapping("/{id}")
 	@ResponseBody
-	@Operation(summary = "Update a contact")
+	@Operation(summary = "Update a contact.")
 	@ApiResponses(value = {
 			@ApiResponse(responseCode = "204", description = "Succesffuly updated contact", content = {
 					@Content(mediaType = "application/json", schema = @Schema(implementation = Contact.class)) }),
@@ -181,70 +188,34 @@ public class ContactResource {
 	public ResponseEntity<Contact> updateContact(@RequestBody Contact contact, @PathVariable("id") int id) {
 
 		Contact contactToUpdate = contactRepository.getOne(id);
-
-		contact.setId(contactToUpdate.getId());
-		contact.getName().setId(contactToUpdate.getName().getId());
-		contact.getAddress().setId(contactToUpdate.getAddress().getId());
-
-		for (Phone phone : contact.getPhone()) {
-
-			Optional<Phone> optionalPhoneToUpdate = contactToUpdate.getPhone().stream()
-					.filter(p -> p.getType().equals(phone.getType())).findFirst();
-
-			if (optionalPhoneToUpdate.isPresent()) {
-				phone.setId(optionalPhoneToUpdate.get().getId());
-			}
-
+		
+		if (contactToUpdate == null) {
+			throw new ContactNotFoundException(String.format("Contact not found $d", id));
 		}
+		
+		contact.setId(id);
+		contact.getAddress().setAddressId(contactToUpdate.getAddress().getAddressId());
+		contact.getPhone().stream().forEach(phone -> phone.setContact(contactToUpdate));
 
 		contactRepository.save(contact);
 
 		return new ResponseEntity<Contact>(HttpStatus.NO_CONTENT);
 	}
 
-	private EntityModel<Contact> createHATEOASLinks(Contact contact) {
-
-		EntityModel<Contact> model = EntityModel.of(contact);
-
-		WebMvcLinkBuilder linkToContacts = linkTo(methodOn(this.getClass()).getContacts());
-		model.add(linkToContacts.withRel("all-contacts"));
-
-		linkToContacts = linkTo(methodOn(this.getClass()).getContact(contact.getId()));
-		model.add(linkToContacts.withRel("get-contact"));
-
-		linkToContacts = linkTo(methodOn(this.getClass()).createContact(contact));
-		model.add(linkToContacts.withRel("create-contact"));
-
-		linkToContacts = linkTo(methodOn(this.getClass()).deleteContact(contact.getId()));
-		model.add(linkToContacts.withRel("delete-contact"));
-
-		return model;
+	public ResourceUtil getResourceUtil() {
+		return resourceUtil;
 	}
 
-	private List<EntityModel<Contact>> createHATEOASLinks(List<Contact> contacts) {
+	public void setResourceUtil(ResourceUtil resourceUtil) {
+		this.resourceUtil = resourceUtil;
+	}
 
-		List<EntityModel<Contact>> entityModelContacts = new ArrayList<>();
+	public ContactRequestMapper getContactRequestMapper() {
+		return contactRequestMapper;
+	}
 
-		for (Contact contact : contacts) {
-
-			EntityModel<Contact> model = EntityModel.of(contact);
-
-			WebMvcLinkBuilder linkToContacts = linkTo(methodOn(this.getClass()).getContacts());
-			model.add(linkToContacts.withRel("all-contacts"));
-
-			linkToContacts = linkTo(methodOn(this.getClass()).getContact(contact.getId()));
-			model.add(linkToContacts.withRel("get-contact"));
-
-			linkToContacts = linkTo(methodOn(this.getClass()).createContact(contact));
-			model.add(linkToContacts.withRel("create-contact"));
-
-			linkToContacts = linkTo(methodOn(this.getClass()).deleteContact(contact.getId()));
-			model.add(linkToContacts.withRel("delete-contact"));
-
-			entityModelContacts.add(model);
-		}
-
-		return entityModelContacts;
+	public void setContactRequestMapper(ContactRequestMapper contactRequestMapper) {
+		this.contactRequestMapper = contactRequestMapper;
 	}
 
 }

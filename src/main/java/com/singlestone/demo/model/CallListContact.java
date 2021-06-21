@@ -4,6 +4,13 @@ public class CallListContact {
 
 	private Name name;
 	public String phone;
+	
+
+	public CallListContact(Name name, String phone) {
+		super();
+		this.name = name;
+		this.phone = phone;
+	}
 
 	public String getPhone() {
 		return phone;

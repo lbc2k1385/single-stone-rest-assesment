@@ -13,9 +13,8 @@ public class SinglestoneRestDemoApplication {
 }
 
 /*
- * Conventions -> Maven, Java, Spring, Security Input Validation HATEAOS ReadMe
- * -> Documentation on project, project decisions, build instructions, database
- * schema ReadMe conventions Flyway Comments in code Kotlin comparison Junits
- * Rest Assured?
+ * Conventions -> Maven, Java, Spring, Security Input Validation HATEAOS HAL
+ * ReadMe -> Documentation on project, project decisions, build instructions,
+ * database schema ReadMe conventions Junits?
  * 
  */
