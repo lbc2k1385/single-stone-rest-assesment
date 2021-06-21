@@ -3,6 +3,12 @@ package com.singlestone.demo;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+/**
+ * Will serve as entry point to restful contact service.
+ * 
+ * @author Lucas Coffey
+ *
+ */
 @SpringBootApplication
 public class SinglestoneRestDemoApplication {
 
@@ -11,10 +17,3 @@ public class SinglestoneRestDemoApplication {
 	}
 
 }
-
-/*
- * Conventions -> Maven, Java, Spring, Security Input Validation HATEAOS HAL
- * ReadMe -> Documentation on project, project decisions, build instructions,
- * database schema ReadMe conventions Junits?
- * 
- */

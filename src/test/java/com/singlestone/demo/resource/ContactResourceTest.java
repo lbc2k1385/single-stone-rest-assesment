@@ -1,4 +1,4 @@
-package com.singlestone.demo;
+package com.singlestone.demo.resource;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -39,6 +39,7 @@ import com.singlestone.demo.repository.util.ResourceUtil;
 import com.singlestone.demo.resource.ContactResource;
 import com.singlestone.demo.resource.exceptions.ContactNotFoundException;
 import com.singlestone.demo.resource.exceptions.ContactNotSavedException;
+import com.singlestone.demo.util.TestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class ContactResourceTest {
@@ -54,6 +55,9 @@ class ContactResourceTest {
 
 	@InjectMocks
 	ContactResource contactResource;
+	
+	
+	TestUtils testUtils = new TestUtils();
 
 	@Test
 	public void getContacts_ContactFoundExceptionTest() {
@@ -107,7 +111,7 @@ class ContactResourceTest {
 	    EntityModel<Contact> model = EntityModel.of(contact);
 
 		when(contactRepository.findById(id)).thenReturn(opt);
-		when(resourceUtil.createHATEOASLinks(Mockito.any(),Mockito.any())).thenReturn(model);
+		when(resourceUtil.createHATEOASLinks(contact)).thenReturn(model);
 		
 		assertDoesNotThrow(() -> {
 			EntityModel<Contact>  entityModel = contactResource.getContact(id);
@@ -162,20 +166,27 @@ class ContactResourceTest {
 		ContactRequest contactRequest = new ContactRequest();
    
 		when(contactRequestMapper.mapToContact(contactRequest)).thenReturn(contact);
+				
+		assertThrows(ContactNotSavedException.class, () -> {		
+			contactResource.createContact(contactRequest);
+		});
 		
-		when(contactRepository.save(contact)).thenReturn(null);
+		contact.setId(1);
 		
 		assertThrows(ContactNotSavedException.class, () -> {		
 			contactResource.createContact(contactRequest);
 		});
 	
 	}
+	
+	
 
 	
 	@Test
 	public void createContact_SuccessfulTest() {
 		
 		Contact contact = new Contact();
+		contact.setId(1);
 		ContactRequest contactRequest = new ContactRequest();
 		
 		MockHttpServletRequest request = new MockHttpServletRequest();
@@ -230,7 +241,7 @@ class ContactResourceTest {
 	@Test
 	public void updateContact_Successful() {
 		
-		Contact contact = createDummyContact(1, "aaa@gmail.com", "123 Somewhere Way,", "Jacksonville", "FL", "32780",
+		Contact contact = testUtils.createDummyContact(1, "aaa@gmail.com", "123 Somewhere Way,", "Jacksonville", "FL", "32780",
 				"111-111-1111", "222-111-1111", "333-111-1111", "Jerry", "Seinfeld", null);
 		
 		when(contactRepository.getOne(1)).thenReturn(contact);
@@ -244,7 +255,7 @@ class ContactResourceTest {
 	
 	private void mockContacts(boolean isEmptyList) {
 		
-		List<Contact> dummyContacts = createDummyContacts();
+		List<Contact> dummyContacts = testUtils.createDummyContacts();
 
 		List<EntityModel<Contact>> entityModels = new ArrayList<>();
 		EntityModel<Contact> model = EntityModel.of(new Contact());
@@ -258,54 +269,7 @@ class ContactResourceTest {
 		
 		
 	}
-	
-	private Contact createDummyContact(int id, String email, String streetAddress, String city, String stateCode, 
-			String zip, String mobilePhoner, String homePhoner, String workPhoner, String firstName, String lastName,
-			String middleNanme){
-		
-		Contact contact = new Contact();
-		contact.setId(id);
-		contact.setEmail(email);
-		
-		AddressId addressId = new AddressId(streetAddress, city, stateCode, zip);
-		Address address = new  Address(addressId);
-		contact.setAddress(address);
-		
-		Name name = new Name(firstName, lastName, null, middleNanme);
-		contact.setName(name);
-		
-		List<Phone> phones = new ArrayList<>();
-		
-		Phone mobilePhone  = new Phone(mobilePhoner, PhoneType.mobile);
-		Phone homePhone  = new Phone(homePhoner, PhoneType.home);
-		Phone workPhone  = new Phone(workPhoner, PhoneType.work);	
-		phones.add(homePhone);
-		phones.add(mobilePhone);
-		phones.add(workPhone);
-		
-		contact.setPhone(phones);
-		
-		return contact;
-				
-	}
 
-	private List<Contact> createDummyContacts() {
-		
-		List<Contact> dummyContacts = new ArrayList<>();
-		
-		
-		Contact contact1 = createDummyContact(1, "aaa@gmail.com", "123 Somewhere Way,", "Jacksonville", "FL", "32780",
-				"111-111-1111", "222-111-1111", "333-111-1111", "John", "Smith", "Jeb");
-				
-
-		Contact contact2 = createDummyContact(2, "bbbgmail.com", "123 Otherside  Way,", "Tow", "TN", "32782",
-				"777-111-1111", "888-111-1111", "999-111-1111","Jerry", "Seinfeld", "Jeb" );
-						
-		dummyContacts.add(contact1);
-		dummyContacts.add(contact2);
-		
-		return dummyContacts;
-	}
 
 	public ContactRequestMapper getContactRequestMapper() {
 		return contactRequestMapper;

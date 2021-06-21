@@ -14,51 +14,79 @@ import com.singlestone.demo.model.Contact;
 import com.singlestone.demo.model.ContactRequest;
 import com.singlestone.demo.resource.ContactResource;
 
+/**
+ * Designed to create HATEOAS links for EntityModels related to operations with the contact resource.
+ * 
+ * @author Lucas Coffey
+ *
+ */
 @Component
 public class ResourceUtil {
 
-	public EntityModel<Contact> createHATEOASLinks(Contact contact, ContactRequest contactRequest) {
-
+	/**
+	 * Will assigned HATEOAS links to a single EntityModel<Contact>.
+	 * 
+	 * @param contact An entity object that represents the resource to be returned.
+	 * @return EntityModel<Contact> that will represent the resource to be returned with HATEOAS links
+	 */
+	public EntityModel<Contact> createHATEOASLinks(Contact contact) {
+		
+		ContactRequest contactRequest = new ContactRequestMapper().mapToContactRequest(contact);
 		EntityModel<Contact> model = EntityModel.of(contact);
-
-		WebMvcLinkBuilder linkToContacts = linkTo(methodOn(ContactResource.class).getContacts());
-		model.add(linkToContacts.withRel("all-contacts"));
-
-		linkToContacts = linkTo(methodOn(ContactResource.class).getContact(contact.getId()));
-		model.add(linkToContacts.withRel("get-contact"));
-
-		linkToContacts = linkTo(methodOn(ContactResource.class).createContact(contactRequest));
-		model.add(linkToContacts.withRel("create-contact"));
-
-		linkToContacts = linkTo(methodOn(ContactResource.class).deleteContact(contact.getId()));
-		model.add(linkToContacts.withRel("delete-contact"));
-
-		return model;
-	}
-
-	public List<EntityModel<Contact>> createHATEOASLinks(List<Contact> contacts) {
-
-		List<EntityModel<Contact>> entityModelContacts = new ArrayList<>();
-
-		for (Contact c : contacts) {
-
-			ContactRequest contactRequest = new ContactRequestMapper().mapToContactRequest(c);
-
-			EntityModel<Contact> model = EntityModel.of(c);
-
+		
+		if(contact != null && contactRequest != null) {
+			
 			WebMvcLinkBuilder linkToContacts = linkTo(methodOn(ContactResource.class).getContacts());
 			model.add(linkToContacts.withRel("all-contacts"));
 
-			linkToContacts = linkTo(methodOn(ContactResource.class).getContact(c.getId()));
+			linkToContacts = linkTo(methodOn(ContactResource.class).getContact(contact.getId()));
 			model.add(linkToContacts.withRel("get-contact"));
 
 			linkToContacts = linkTo(methodOn(ContactResource.class).createContact(contactRequest));
 			model.add(linkToContacts.withRel("create-contact"));
 
-			linkToContacts = linkTo(methodOn(ContactResource.class).deleteContact(c.getId()));
+			linkToContacts = linkTo(methodOn(ContactResource.class).deleteContact(contact.getId()));
 			model.add(linkToContacts.withRel("delete-contact"));
+		}
 
-			entityModelContacts.add(model);
+		return model;
+	}
+	
+	
+	/**
+	 * Will assigned HATEOAS links to multiple EntityModels<Contact>.
+	 * 
+	 * @param contacts A list of entity objects that represents the resources to be returned.
+	 * @return List<EntityModel<Contact>> that will represent the resource to be returned with HATEOAS links
+	 */
+	public List<EntityModel<Contact>> createHATEOASLinks(List<Contact> contacts) {
+
+		List<EntityModel<Contact>> entityModelContacts = new ArrayList<>();
+		
+		for (Contact contact : contacts) {
+		
+			ContactRequest contactRequest = new ContactRequestMapper().mapToContactRequest(contact);
+			
+			if(contact != null && contactRequest != null) {
+				
+				EntityModel<Contact> model = EntityModel.of(contact);
+
+				WebMvcLinkBuilder linkToContacts = linkTo(methodOn(ContactResource.class).getContacts());
+				model.add(linkToContacts.withRel("all-contacts"));
+
+				linkToContacts = linkTo(methodOn(ContactResource.class).getContact(contact.getId()));
+				model.add(linkToContacts.withRel("get-contact"));
+
+				linkToContacts = linkTo(methodOn(ContactResource.class).createContact(contactRequest));
+				model.add(linkToContacts.withRel("create-contact"));
+
+				linkToContacts = linkTo(methodOn(ContactResource.class).deleteContact(contact.getId()));
+				model.add(linkToContacts.withRel("delete-contact"));
+
+				entityModelContacts.add(model);
+			}
+
+			
 		}
 
 		return entityModelContacts;

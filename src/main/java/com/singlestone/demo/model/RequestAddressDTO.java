@@ -41,6 +41,9 @@ public class RequestAddressDTO implements Serializable {
 		this.state = state;
 		this.zip = zip;
 	}
+	
+	public RequestAddressDTO() {
+	}
 
 	public String getStreet() {
 		return street;

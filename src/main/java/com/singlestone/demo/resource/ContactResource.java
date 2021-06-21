@@ -10,6 +10,7 @@ import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -69,7 +70,7 @@ public class ContactResource {
 			throw new ContactNotFoundException("No contacts found");
 
 		List<EntityModel<Contact>> entityModels = resourceUtil.createHATEOASLinks(foundContacts);
-
+		
 		return ResponseEntity.ok(CollectionModel.of(entityModels));
 	}
 
@@ -89,7 +90,7 @@ public class ContactResource {
 		if (!optionalContact.isPresent())
 			throw new ContactNotFoundException(String.format("Contact not found", id));
 
-		EntityModel<Contact> model = resourceUtil.createHATEOASLinks(optionalContact.get(), null);
+		EntityModel<Contact> model = resourceUtil.createHATEOASLinks(optionalContact.get());
 
 		return model;
 	}
@@ -114,17 +115,22 @@ public class ContactResource {
 
 		for (Contact contact : contacts) {
 
-			Optional<Phone> optPhone = contact.getPhone().stream()
-					.filter(p -> !p.getNumber().equals(PhoneType.home.toString())).findFirst();
+			if(contact.getName() != null && !CollectionUtils.isEmpty(contact.getPhone()) ) {
+				
+				Optional<Phone> optPhone = contact.getPhone().stream()
+						.filter(p -> !p.getNumber().equals(PhoneType.home.toString())).findFirst();
 
-			if (optPhone.isPresent()) {
-				
-				Name name = new Name(contact.getName().getFirst(), contact.getName().getLast(), contact,
-						contact.getName().getMiddle());
-				
-				CallListContact callListContact = new CallListContact(name, optPhone.get().getNumber());
-				callListContacts.add(callListContact);
+				if (optPhone.isPresent()) {
+					
+					Name name = new Name(contact.getName().getFirst(), contact.getName().getLast(), contact,
+							contact.getName().getMiddle());
+					
+					CallListContact callListContact = new CallListContact(name, optPhone.get().getNumber());
+					callListContacts.add(callListContact);
+				}
 			}
+			
+			
 
 		}
 
@@ -142,6 +148,11 @@ public class ContactResource {
 	public ResponseEntity<?> createContact(@RequestBody ContactRequest contactRequest) {
 
 		Contact contact =  contactRequestMapper.mapToContact(contactRequest);
+		
+		if(contact == null || contact.getId() == 0) {
+			throw new ContactNotSavedException("Could not create contact.");
+		}
+		
 		Contact newContact = contactRepository.save(contact);
 
 		if (newContact == null)
@@ -192,6 +203,10 @@ public class ContactResource {
 		if (contactToUpdate == null) {
 			throw new ContactNotFoundException(String.format("Contact not found $d", id));
 		}
+	
+		if(contact == null || contact.getAddress() == null && CollectionUtils.isEmpty(contact.getPhone())) {
+			throw new ContactNotFoundException(String.format("Contact not found $d", id));
+		}
 		
 		contact.setId(id);
 		contact.getAddress().setAddressId(contactToUpdate.getAddress().getAddressId());
@@ -216,6 +231,14 @@ public class ContactResource {
 
 	public void setContactRequestMapper(ContactRequestMapper contactRequestMapper) {
 		this.contactRequestMapper = contactRequestMapper;
+	}
+	
+	public ContactRepository getContactRepository() {
+		return contactRepository;
+	}
+
+	public void setContactRepository(ContactRepository contactRepository) {
+		this.contactRepository = contactRepository;
 	}
 
 }

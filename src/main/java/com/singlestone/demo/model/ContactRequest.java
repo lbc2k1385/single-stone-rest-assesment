@@ -3,25 +3,16 @@ package com.singlestone.demo.model;
 import java.io.Serializable;
 import java.util.List;
 
-import javax.persistence.CascadeType;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.validation.constraints.Email;
 
 public class ContactRequest implements Serializable {
 
 	private static final long serialVersionUID = 2202289758140746827L;
 
-	@OneToOne(cascade = CascadeType.ALL)
-	@JoinColumn(name = "name_id", referencedColumnName = "id")
 	private Name name;
 
-	@OneToOne(cascade = CascadeType.ALL)
-	@JoinColumn(name = "address_id", referencedColumnName = "id")
 	private RequestAddressDTO address;
 
-	@OneToMany(cascade = CascadeType.ALL)
 	private List<PhoneRequestDTO> phone;
 
 	@Email(message = "Email is not valid")
