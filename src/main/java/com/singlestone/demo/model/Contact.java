@@ -7,11 +7,14 @@ import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinColumns;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.Positive;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
@@ -28,12 +31,20 @@ public class Contact implements Serializable {
 	private Name name;
 
 	@OneToOne(cascade = CascadeType.ALL)
+	@JoinColumns({
+		@JoinColumn(name= "street", referencedColumnName = "street"),
+		@JoinColumn(name= "city", referencedColumnName = "city"),
+		@JoinColumn(name= "state", referencedColumnName = "state"),
+		@JoinColumn(name= "zip", referencedColumnName = "zip"),
+		@JoinColumn(name= "contact", referencedColumnName = "contact")
+	})
+	@JsonIgnore
 	private Address address;
 
-	@OneToMany(mappedBy = "contact", cascade = CascadeType.ALL)
+	@OneToMany(cascade = CascadeType.ALL)
 	@JsonIgnoreProperties("contact")
 	private List<Phone> phone;
-
+	
 	@Email(message = "Email is not valid")
 	private String email;
 
@@ -134,4 +145,9 @@ public class Contact implements Serializable {
 			return false;
 		return true;
 	}
+
+	
+
+	
+	
 }

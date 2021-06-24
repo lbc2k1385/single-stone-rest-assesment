@@ -2,6 +2,12 @@ package com.singlestone.demo.resource.exceptions;
 
 import java.util.Date;
 
+/**
+ * POJO used to provide a standard format for exception responses.
+ * 
+ * @author Lucas Coffey
+ *
+ */
 public class ExceptionResponse {
 
 	private Date dateTime;

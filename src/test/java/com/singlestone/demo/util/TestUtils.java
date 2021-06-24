@@ -9,6 +9,7 @@ import com.singlestone.demo.model.Contact;
 import com.singlestone.demo.model.ContactRequest;
 import com.singlestone.demo.model.Name;
 import com.singlestone.demo.model.Phone;
+import com.singlestone.demo.model.PhoneId;
 import com.singlestone.demo.model.PhoneRequestDTO;
 import com.singlestone.demo.model.PhoneType;
 import com.singlestone.demo.model.RequestAddressDTO;
@@ -18,7 +19,7 @@ public class TestUtils {
 
 	
 	public Contact createDummyContact(int id, String email, String streetAddress, String city, String stateCode, 
-				String zip, String mobilePhoner, String homePhoner, String workPhoner, String firstName, String lastName,
+				String zip, String mobilePhoneStr, String homePhoneStr, String workPhoneStr, String firstName, String lastName,
 				String middleNanme){
 			
 			Contact contact = new Contact();
@@ -34,9 +35,16 @@ public class TestUtils {
 			
 			List<Phone> phones = new ArrayList<>();
 			
-			Phone mobilePhone  = new Phone(mobilePhoner, PhoneType.mobile);
-			Phone homePhone  = new Phone(homePhoner, PhoneType.home);
-			Phone workPhone  = new Phone(workPhoner, PhoneType.work);	
+			PhoneId mobilePhoneId  = new PhoneId(PhoneType.mobile,contact);
+			Phone mobilePhone = new Phone(mobilePhoneId, mobilePhoneStr);
+			
+			
+			PhoneId homePhoneId  = new PhoneId(PhoneType.home,contact);
+			Phone homePhone = new Phone(homePhoneId, homePhoneStr);
+			
+			PhoneId workPhoneId  = new PhoneId(PhoneType.work,contact);
+			Phone workPhone = new Phone(workPhoneId, workPhoneStr);
+					
 			phones.add(homePhone);
 			phones.add(mobilePhone);
 			phones.add(workPhone);

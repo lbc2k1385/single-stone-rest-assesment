@@ -5,6 +5,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import com.singlestone.demo.model.Contact;
 import com.singlestone.demo.model.ContactRequest;
+import com.singlestone.demo.model.ContactResponse;
 import com.singlestone.demo.resource.ContactResource;
 
 /**
@@ -29,48 +31,22 @@ public class ResourceUtil {
 	 * @param contact An entity object that represents the resource to be returned.
 	 * @return EntityModel<Contact> that will represent the resource to be returned with HATEOAS links
 	 */
-	public EntityModel<Contact> createHATEOASLinks(Contact contact) {
+	public EntityModel<ContactRequest> createHATEOASLinks(Contact contact) {
 		
-		ContactRequest contactRequest = new ContactRequestMapper().mapToContactRequest(contact);
-		EntityModel<Contact> model = EntityModel.of(contact);
+		ContactRequestMapper contactRequestMapper = new ContactRequestMapper();
 		
-		if(contact != null && contactRequest != null) {
+		Optional<ContactRequest> optionalContactRequest = contactRequestMapper.mapToContactRequest(contact);
+		
+		EntityModel<ContactRequest> model =  EntityModel.of(new ContactRequest());
+		
+		if(optionalContactRequest.isPresent()) {
 			
-			WebMvcLinkBuilder linkToContacts = linkTo(methodOn(ContactResource.class).getContacts());
-			model.add(linkToContacts.withRel("all-contacts"));
-
-			linkToContacts = linkTo(methodOn(ContactResource.class).getContact(contact.getId()));
-			model.add(linkToContacts.withRel("get-contact"));
-
-			linkToContacts = linkTo(methodOn(ContactResource.class).createContact(contactRequest));
-			model.add(linkToContacts.withRel("create-contact"));
-
-			linkToContacts = linkTo(methodOn(ContactResource.class).deleteContact(contact.getId()));
-			model.add(linkToContacts.withRel("delete-contact"));
-		}
-
-		return model;
-	}
-	
-	
-	/**
-	 * Will assigned HATEOAS links to multiple EntityModels<Contact>.
-	 * 
-	 * @param contacts A list of entity objects that represents the resources to be returned.
-	 * @return List<EntityModel<Contact>> that will represent the resource to be returned with HATEOAS links
-	 */
-	public List<EntityModel<Contact>> createHATEOASLinks(List<Contact> contacts) {
-
-		List<EntityModel<Contact>> entityModelContacts = new ArrayList<>();
-		
-		for (Contact contact : contacts) {
-		
-			ContactRequest contactRequest = new ContactRequestMapper().mapToContactRequest(contact);
+			ContactRequest contactRequest = optionalContactRequest.get();
 			
-			if(contact != null && contactRequest != null) {
+			model = EntityModel.of(optionalContactRequest.get());
+			
+			if(contact != null) {
 				
-				EntityModel<Contact> model = EntityModel.of(contact);
-
 				WebMvcLinkBuilder linkToContacts = linkTo(methodOn(ContactResource.class).getContacts());
 				model.add(linkToContacts.withRel("all-contacts"));
 
@@ -82,11 +58,50 @@ public class ResourceUtil {
 
 				linkToContacts = linkTo(methodOn(ContactResource.class).deleteContact(contact.getId()));
 				model.add(linkToContacts.withRel("delete-contact"));
+			}
+		}
+		
+
+		return model;
+	}
+	
+	
+	/**
+	 * Will assigned HATEOAS links to multiple EntityModels<Contact>.
+	 * 
+	 * @param contacts A list of entity objects that represents the resources to be returned.
+	 * @return List<EntityModel<Contact>> that will represent the resource to be returned with HATEOAS links
+	 */
+	public List<EntityModel<ContactResponse>> createHATEOASLinks(List<Contact> contacts) {
+		
+		ContactRequestMapper contactRequestMapper = new ContactRequestMapper();
+
+		List<EntityModel<ContactResponse>> entityModelContacts = new ArrayList<>();
+		
+		
+		for (Contact contact : contacts) {
+		
+			Optional<ContactResponse> optionalContactResponse = contactRequestMapper.mapToContactResponse(contact);
+			Optional<ContactRequest> optionalContactRequest = contactRequestMapper.mapToContactRequest(contact);
+			
+			if(optionalContactResponse.isPresent() && optionalContactRequest.isPresent()) {
+				
+				EntityModel<ContactResponse> model = EntityModel.of(optionalContactResponse.get());
+
+				WebMvcLinkBuilder linkToContacts = linkTo(methodOn(ContactResource.class).getContacts());
+				model.add(linkToContacts.withRel("all-contacts"));
+
+				linkToContacts = linkTo(methodOn(ContactResource.class).getContact(contact.getId()));
+				model.add(linkToContacts.withRel("get-contact"));
+
+				linkToContacts = linkTo(methodOn(ContactResource.class).createContact(optionalContactRequest.get()));
+				model.add(linkToContacts.withRel("create-contact"));
+
+				linkToContacts = linkTo(methodOn(ContactResource.class).deleteContact(contact.getId()));
+				model.add(linkToContacts.withRel("delete-contact"));
 
 				entityModelContacts.add(model);
-			}
-
-			
+			}			
 		}
 
 		return entityModelContacts;

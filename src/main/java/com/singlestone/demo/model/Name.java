@@ -3,8 +3,10 @@ package com.singlestone.demo.model;
 import java.io.Serializable;
 
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -15,7 +17,9 @@ public class Name implements Serializable {
 
 	private static final long serialVersionUID = -2927058725783429667L;
 
+	@Positive
 	@Id
+	@GeneratedValue
 	@JsonIgnore
 	private int id;
 
@@ -38,6 +42,15 @@ public class Name implements Serializable {
 			@Size(min = 2, message = "First name must be at least 2 characters") @Size(max = 100, message = "First name must not be more than 100 characters") @NotNull String first,
 			@Size(min = 2, message = "Last name must be at least 2 characters") @Size(max = 100, message = "Last name must not be more than 100 characters") @NotNull String last,
 			Contact contact, String middle) {
+		super();
+		this.first = first;
+		this.last = last;
+		this.middle = middle;
+	}
+	
+	public Name(
+			@Size(min = 2, message = "First name must be at least 2 characters") @Size(max = 100, message = "First name must not be more than 100 characters") @NotNull String first,
+			@Size(min = 2, message = "Last name must be at least 2 characters") @Size(max = 100, message = "Last name must not be more than 100 characters") @NotNull String last,String middle) {
 		super();
 		this.first = first;
 		this.last = last;

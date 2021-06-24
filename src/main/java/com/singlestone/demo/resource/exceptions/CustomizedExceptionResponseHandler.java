@@ -17,6 +17,14 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+
+/**
+ * Used as a exception mapper to throw custom exceptions with a standard response format.
+ * This mapper is enabled through the spring @ControllerAdvice.
+ * 
+ * @author Lucas Coffey
+ *
+ */
 @RestController
 @ControllerAdvice
 public class CustomizedExceptionResponseHandler extends ResponseEntityExceptionHandler {
@@ -55,6 +63,12 @@ public class CustomizedExceptionResponseHandler extends ResponseEntityExceptionH
 
 	
 
+	/**
+	 * Used to capture exception causes for JPA constraint errors.
+	 * 
+	 * @param exception A TransactionSystemException that is thrown during JPA constrain errors.
+	 * @return A ResponseEntity to return details related to the ConstraintViolationException violation.
+	 */
 	@ExceptionHandler(TransactionSystemException.class)
 	public ResponseEntity<Object> handleTransactionException(TransactionSystemException exception) {
 
