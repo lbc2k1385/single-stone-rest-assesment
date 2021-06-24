@@ -11,11 +11,11 @@ This process assumes that maven is installed on your machine.
 </br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 	a) Open up your workspace and proceed to File 
 	</br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-	b) Import -> Existing Local Repository
+	b) File -> Import
 	</br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-	c) Select your local repository 
+	c) Existing Maven Project
 	</br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-	d) Import files as existing eclipse project 
+	d) Browse to the local repo created earlier
 	</br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 	e) Select the project
 	</br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
