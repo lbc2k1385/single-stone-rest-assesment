@@ -54,4 +54,3 @@ HATEOAS is enabled via the spring framework for basic contact crud operations.  
 ### Swagger UI
 Spring boot has also provides a swagger ui page build in for ease access to resource operations.  It can be accessed here:
 http://localhost:8080/swagger-ui/index.html?configUrl=/v3/api-docs/swagger-config
-
