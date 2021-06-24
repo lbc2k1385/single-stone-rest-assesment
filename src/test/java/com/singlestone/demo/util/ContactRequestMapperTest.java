@@ -2,8 +2,6 @@ package com.singlestone.demo.util;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
@@ -16,15 +14,10 @@ import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.singlestone.demo.model.Address;
-import com.singlestone.demo.model.AddressDTO;
-import com.singlestone.demo.model.AddressId;
 import com.singlestone.demo.model.Contact;
 import com.singlestone.demo.model.ContactRequest;
 import com.singlestone.demo.model.ContactResponse;
-import com.singlestone.demo.model.Phone;
-import com.singlestone.demo.model.PhoneId;
 import com.singlestone.demo.model.PhoneRequestDTO;
-import com.singlestone.demo.model.PhoneType;
 import com.singlestone.demo.model.RequestAddressDTO;
 import com.singlestone.demo.repository.util.ContactRequestMapper;
 
@@ -37,7 +30,7 @@ class ContactRequestMapperTest {
 	ContactRequestMapper contactRequestMapper;
 	
 	@Test
-	public void mapToContactTest_Sucessfull() {
+	public void mapToContactTest__Successful() {
 			
 		ContactRequest contactRequest = testUtils.createContactRequst(2, "bbbgmail.com", "123 Otherside  Way,", "Tow", "TN", "32782",
 					"777-111-1111", "888-111-1111", "999-111-1111","Jerry", "Seinfeld", "Jeb" );
@@ -51,10 +44,6 @@ class ContactRequestMapperTest {
 			assertEquals(contact.getName().getFirst(), returnContact.get().getName().getFirst());
 			assertEquals(contact.getName().getLast(), returnContact.get().getName().getLast());
 			assertEquals(contact.getName().getLast(), returnContact.get().getName().getLast());
-			assertEquals(contact.getAddress().getAddressId().getCity(), returnContact.get().getAddress().getAddressId().getCity());
-			assertEquals(contact.getAddress().getAddressId().getState(), returnContact.get().getAddress().getAddressId().getState());
-			assertEquals(contact.getAddress().getAddressId().getZip(), returnContact.get().getAddress().getAddressId().getZip());
-			assertEquals(contact.getAddress().getAddressId().getStreet(), returnContact.get().getAddress().getAddressId().getStreet());
 			assertEquals(contact.getEmail(), returnContact.get().getEmail());
 		});
 	}
@@ -112,7 +101,7 @@ class ContactRequestMapperTest {
 	}
 	
 	@Test
-	public void mapToContactRequest_Sucessful() {
+	public void mapToContactRequest_Successful() {
 		
 		assertDoesNotThrow(()->{
 			
@@ -156,7 +145,7 @@ class ContactRequestMapperTest {
 	}
 	
 	@Test
-	public void mapToContactResponse_Sucessful() {
+	public void mapToContactResponse_Successful() {
 		
 		assertDoesNotThrow(()->{
 			

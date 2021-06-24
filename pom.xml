@@ -11,6 +11,7 @@
 	<groupId>com.singlestone.demo</groupId>
 	<artifactId>singlestone-rest-demo</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
 	<name>singlestone-rest-demo</name>
 	<description>Restful service for singleStone assessment. The application is meant to serve  as a REST API that will enable a client to perform CRUD operations on the contact collection</description>
 	<properties>

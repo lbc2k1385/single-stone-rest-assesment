@@ -26,10 +26,10 @@ import com.singlestone.demo.resource.ContactResource;
 public class ResourceUtil {
 
 	/**
-	 * Will assigned HATEOAS links to a single EntityModel<Contact>.
+	 * Will assigned HATEOAS links to a single EntityModel<ContactRequest>.
 	 * 
 	 * @param contact An entity object that represents the resource to be returned.
-	 * @return EntityModel<Contact> that will represent the resource to be returned with HATEOAS links
+	 * @return EntityModel<ContactRequest> that will represent the resource to be returned with HATEOAS links
 	 */
 	public EntityModel<ContactRequest> createHATEOASLinks(Contact contact) {
 		
@@ -67,7 +67,7 @@ public class ResourceUtil {
 	
 	
 	/**
-	 * Will assigned HATEOAS links to multiple EntityModels<Contact>.
+	 * Will assigned HATEOAS links to multiple List<EntityModel<ContactResponse>>.
 	 * 
 	 * @param contacts A list of entity objects that represents the resources to be returned.
 	 * @return List<EntityModel<Contact>> that will represent the resource to be returned with HATEOAS links

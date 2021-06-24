@@ -29,11 +29,11 @@ public class ContactRequestMapper {
 
 	
 	/**
-	 * Utility method used to transfer ContactRequest to a Contact entity.
-	 * If a null pointer is detected that an empty Contact entity will be returned.
+	 * Utility method used to transfer ContactRequest to an Optional<Contact>  entity.
+	 * If a null pointer is detected that an empty Optional<Contact> entity will be returned.
 	 * 
-	 * @param contactRequest DTO used to represent Contact information.
-	 * @return A contact entity based on the contactRequest data.
+	 * @param contactRequest Used to represent Contact information.
+	 * @return An Optional<Contact> entity based on the contactRequest data.
 	 */
 	public Optional<Contact>  mapToContact(ContactRequest contactRequest) {
 		
@@ -63,10 +63,7 @@ public class ContactRequestMapper {
 		addressId.setZip(contactRequest.getAddress().getZip());
 		address.setAddressId(addressId);
 		
-
 		Contact returnContact = new Contact(contactRequest.getName(), null, returnPhones, contactRequest.getEmail());
-		//addressId.setContact(returnContact);
-		//returnContact.setAddress(address);
 		
 		returnPhones.forEach(p -> p.getPhoneId().setContact(returnContact));
 		
@@ -79,11 +76,11 @@ public class ContactRequestMapper {
 
 	
 	/**
-	 * Utility method used to transfer Contact entity data to a ContactRequest.
-	 * If a null pointer is detected that an empty ContactRequest entity will be returned.
+	 * Utility method used to transfer Contact entity data to an Optional<ContactRequest>.
+	 * If a null pointer is detected that an empty ContactRequest  Optional<ContactRequest> will be returned.
 	 * 
-	 * @param contact An entity that is used to transfer data to a ContactRequest DTO
-	 * @return A DTO that is used to represent contact data.
+	 * @param contact An entity that is used to transfer data to a ContactRequest.
+	 * @return An Optional<ContactRequest> that is used to represent contact data.
 	 */
 	public Optional<ContactRequest> mapToContactRequest(Contact contact) {
 		
@@ -114,8 +111,8 @@ public class ContactRequestMapper {
 
 	
 	/**
-	 * Utility method used to transfer a contact entities to a ContactResponse.
-	 * If a null pointer is detected than an empty Contact entity will be returned.
+	 * Utility method used to transfer a contact entity to a Optional<ContactResponse>.
+	 * If a null pointer is detected than an empty Optional<ContactResponse> entity will be returned.
 	 * 
 	 * @param contact
 	 * @return

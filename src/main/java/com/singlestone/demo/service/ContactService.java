@@ -33,6 +33,13 @@ import com.singlestone.demo.repository.util.ResourceUtil;
 import com.singlestone.demo.resource.exceptions.ContactNotFoundException;
 import com.singlestone.demo.resource.exceptions.ContactNotSavedException;
 
+/**
+ * This class serves as the main business logic layer of the application.
+ * It interacts with both the end point and data layer of the app.
+ * 
+ * @author Lucas Coffey
+ *
+ */
 @Component
 public class ContactService {
 	
@@ -52,17 +59,28 @@ public class ContactService {
 	private NameRepository nameRepository;
 	
 	
+	/**
+	 * Will handle contact creation.
+	 * 
+	 * @param contactRequest Holds data from the client request.
+	 * @return ResponseEntity<> that returns the resource.
+	 */
 	public ResponseEntity<?> handleContactCreation(ContactRequest contactRequest) {
 		
 		if(contactRequest == null || contactRequest.getAddress() == null) {
 			throw new ContactNotSavedException("Could not create contact.");
 		}
 		
-		
+		//Convert object from ContactRequest to Contact 
 		Optional<Contact> optionalContact =  contactRequestMapper.mapToContact(contactRequest);
 		
 		if(optionalContact.isPresent()) {
 			
+			/*
+			 * It is necessary to save here so you can place this entity in the Address foreign key.
+			 * The contact entity id part of the primary key in address entity. Without contact
+			 * the address insert will fail.
+			 */
 			Contact returnContact = contactRepository.save(optionalContact.get());
 			
 			if (returnContact == null)
@@ -92,6 +110,11 @@ public class ContactService {
 	}
 	
 	
+	/**
+	 * Will return all contacts in the database.
+	 * 
+	 * @return ResponseEntity<CollectionModel<EntityModel<ContactResponse>>> that represents the resource.
+	 */
 	public ResponseEntity<CollectionModel<EntityModel<ContactResponse>>> handleGetContacts() {
 
 		List<Contact> foundContacts = contactRepository.findAll();
@@ -105,6 +128,12 @@ public class ContactService {
 	}
 	
 	
+	/**
+	 * Will return a single contact by the id provided.
+	 * 
+	 * @param id Represents the primary key of the resource.
+	 * @return EntityModel<ContactRequest>  that represent the resource.
+	 */
 	public EntityModel<ContactRequest> handleGetContact(int id) {
 
 		Optional<Contact> optionalContact = contactRepository.findById(id);
@@ -117,6 +146,11 @@ public class ContactService {
 		return model;
 	}
 	
+	/**
+	 * Will return a list of every contact and their home phone number in the system.
+	 * 
+	 * @return List<CallListContact> that represent the resource.
+	 */
 	public List<CallListContact> handleGetCallList(){
 		
 		List<CallListContact> callListContacts = new ArrayList<>();
@@ -131,15 +165,14 @@ public class ContactService {
 			if(contact.getName() == null || CollectionUtils.isEmpty(contact.getPhone()))
 				throw new ContactNotFoundException("No contacts found");
 
+			//Filter out all phones accept for the home phone
 			Optional<Phone> optionPhone = contact.getPhone()
 					.stream()
 					.filter(p -> !p.getNumber().equals(PhoneType.home.toString())).findFirst();
 
 			if (optionPhone.isPresent()) {
 				
-				Name name = new Name(contact.getName().getFirst(), contact.getName().getLast(), contact,
-						contact.getName().getMiddle());
-				
+				Name name = new Name(contact.getName().getFirst(), contact.getName().getLast(), contact, contact.getName().getMiddle());
 				CallListContact callListContact = new CallListContact(name, optionPhone.get().getNumber());
 				callListContacts.add(callListContact);
 				
@@ -149,13 +182,20 @@ public class ContactService {
 			
 		}
 		
-	
+		
+		//Uses the compare by method referenced in CallListContact to sort by last name,first name.
 		Collections.sort(callListContacts); 
 		
 		return callListContacts;
 		
 	}
 	
+	/**
+	 * Will delete a contact based on the primary key represent as the id parameter.
+	 * 
+	 * @param id Primary Key of the resource to delete
+	 * @return ResponseEntity<Contact> with a No Content 204 status
+	 */
 	public ResponseEntity<Contact> handleDelete(int id) {
 		
 		Optional<Contact> optionContact = contactRepository.findById(id);
@@ -179,8 +219,16 @@ public class ContactService {
 		return new ResponseEntity<Contact>(HttpStatus.NO_CONTENT);
 	}
 	
+	/**
+	 * Will update contact based on the id and contactRequst being passed by the client.
+	 * 
+	 * @param contactRequest A request object that holds contact data.
+	 * @param id Primary key of the resource to be deleted.
+	 * @return ResponseEntity<Contact> with a No Content 204 status
+	 */
 	public ResponseEntity<Contact> handleUpdateContact(ContactRequest contactRequest, int id) {
 		
+		//Find the resource you need to delete
 		Optional<Contact> optionContact = contactRepository.findById(id);
 		
 		if(optionContact.isEmpty() || contactRequest == null || contactRequest.getAddress() == null 
@@ -192,17 +240,27 @@ public class ContactService {
 		
 		AddressId addressIdToUpdate = contactToUpdate.getAddress().getAddressId();
 		
+		/*
+		 * Remove the foreign key references so the can be updated with new values.
+		 * This is necessary because these entities are foreign keys in the contact 
+		 * entity, and because the contact id is used as a composite key for both
+		 * the Address and Phone entity. This seems like the CASCADE.ALL annotation
+		 * on the Contact entity would handle this issue, however this did not seem
+		 * to be the case. Therefore, I just manually remove them.
+		 */
 		contactToUpdate.getPhone().clear();
 		contactToUpdate.setAddress(null);
-				
+			
 		Optional<Address> optAddressToDelete = addressRepository.findById(addressIdToUpdate);
 				
 		if(optAddressToDelete.isPresent())
+			//It is necessary to remove this due to the comment above referring to foreign keys
 			addressRepository.deleteById(optAddressToDelete.get().getAddressId());
 		else 
 			throw new ContactNotSavedException("Address could not be updated");
 		
 		Address addressToUpdate = new Address();
+		
 		addressIdToUpdate.setCity(contactRequest.getAddress().getCity());
 		addressIdToUpdate.setState(contactRequest.getAddress().getState());
 		addressIdToUpdate.setStreet(contactRequest.getAddress().getStreet());
@@ -210,7 +268,6 @@ public class ContactService {
 		contactToUpdate.setAddress(addressToUpdate);
 		addressIdToUpdate.setContact(contactToUpdate);
 		addressToUpdate.setAddressId(addressIdToUpdate);
-
 			
 		contactToUpdate.setAddress(addressToUpdate);
 			
@@ -225,9 +282,7 @@ public class ContactService {
 			phone.setPhoneId(phoneId);
 			phonesToUpdate.add(phone);
 		}
-		
-		contactToUpdate.setPhone(null);
-		
+				
 		Name name = contactToUpdate.getName();
 		name.setFirst(contactRequest.getName().getFirst());
 		name.setLast(contactRequest.getName().getLast());
