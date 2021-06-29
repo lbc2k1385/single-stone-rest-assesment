@@ -12,6 +12,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -40,8 +41,8 @@ import com.singlestone.demo.resource.exceptions.ContactNotSavedException;
  * @author Lucas Coffey
  *
  */
-@Component
-public class ContactService {
+@Service
+public class ContactServiceImpl {
 	
 	@Autowired
 	private ContactRepository contactRepository;
@@ -339,8 +340,4 @@ public class ContactService {
 	public void setNameRepository(NameRepository nameRepository) {
 		this.nameRepository = nameRepository;
 	}
-	
-	
-	
-
 }
