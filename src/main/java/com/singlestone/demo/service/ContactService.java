@@ -42,7 +42,7 @@ import com.singlestone.demo.resource.exceptions.ContactNotSavedException;
  *
  */
 @Service
-public class ContactServiceImpl {
+public class ContactService {
 	
 	@Autowired
 	private ContactRepository contactRepository;
